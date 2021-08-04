@@ -1,0 +1,37 @@
+{
+    "userList": {
+        "user1": {
+            "phone": "18888888888",
+            "reivew_rule": {
+                "or": [
+                    "user2",
+                    "user3"
+                ]
+            }
+        },
+        "user2": {
+            "phone": "16666666666"
+        },
+        "user3": {
+            "phone": "17777777777"
+        }
+    },
+    "projectList": {
+        "project-name1": {
+            "other_name": "live",
+            "review_userList": [
+                "user1",
+                "user2",
+                "user3"
+            ]
+        },
+        "project-name2": {
+            "other_name": "go",
+            "review_userList": [
+                "user1",
+                "user2",
+                "user3"
+            ]
+        }
+    }
+}
