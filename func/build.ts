@@ -22,7 +22,7 @@ export default async function () {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.70"
         }
     }
-    const appList = (await (await fetch(`http://${rider_url}/api/app/search_my_app?page=1&per_page=10`, header)).json()).data
+    const appList = (await (await fetch(`http://${rider_url}/api/app/search_app?page=1&per_page=10`, header)).json()).data
     const project = (await prompts({
         type: 'select',
         name: 'value',
@@ -99,7 +99,7 @@ export default async function () {
 }
 
 function waiting() {
-    const chart = '|/-'
+    const chart = '|/-\\'
     let index = 0
     // 一帧能玩，两帧流畅，三帧电竞
     return setInterval(() => {
