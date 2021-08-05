@@ -1,7 +1,17 @@
-import { request, gql } from 'graphql-request'
+import { Octokit } from "@octokit/core";
 
 export async function GetMyPr(project) {
     const data = await fetch(`https://api.github.com/repos/MiaoSiLa/${project}/pulls?access_token=${process.env.GITHUB_TOKEN}`)
+    let res = await data.json()
+    // 筛选 user
+    return res.filter(item => item.user.login === process.env.GITHUB_USERNAME)
+}
+
+export async function CreatePR(project) {
+    const data = await fetch(`https://api.github.com/repos/MiaoSiLa/${project}/pulls?access_token=${process.env.GITHUB_TOKEN}`, {
+        method: "post",
+        body: JSON.stringify({ "title": "test 上线 pr", "head": "master", "base": "stable" })
+    })
     let res = await data.json()
     // 筛选 user
     return res.filter(item => item.user.login === process.env.GITHUB_USERNAME)
@@ -20,7 +30,6 @@ export class Pr {
     }
 
     async PR() {
-        const query = gql``
         const data = await fetch(`https://api.github.com/repos/MiaoSiLa/${this.project}/pulls?access_token=${this.token}`)
         return await data.json()
     }
