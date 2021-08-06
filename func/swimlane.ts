@@ -1,4 +1,6 @@
-import { readdirSync } from 'fs';
+import { readdirSync,readFileSync } from 'fs';
+import { waitingFunc } from '../common/waiting.js'
+import log from '../common/log.js';
 import prompts from 'prompts';
 import json from './swimlane/swimlane.json'
 const { name, ip } = json
@@ -24,14 +26,13 @@ export default async function ssh({ img, name_space, project }: params = {}) {
             title: item, value: item
         })),
         initial: 0
-    })).value as string
-
+    })).value
     name_space = name_space ?? (await prompts({
         type: 'text',
         name: 'value',
         message: '请输入泳道名称',
         initial: name
-    })).value as string
+    })).value
 
     img = img ?? (await prompts({
         type: 'text',
@@ -44,26 +45,25 @@ export default async function ssh({ img, name_space, project }: params = {}) {
 
     const str = await getYml(name_space, img, path)
     await updatedK8s(str, project)
-    for (; ;) {
-        await sleep(1000)
-        const created_pod_key = Array.from((await getPodsMap(name_space)).keys()).find(item => !pods.has(item))
-        const map = await getPodsMap(name_space)
-        const item = map.get(created_pod_key)
-        if (!item) {
-            console.log(chalk.yellow("找不到更新的容器，请确认"));
-            console.log(created_pod_key, map, item);
-            return
+    await waitingFunc(async function () {
+        for (; ;) {
+            await sleep(1000)
+            const created_pod_key = Array.from((await getPodsMap(name_space)).keys()).find(item => !pods.has(item))
+            const map = await getPodsMap(name_space)
+            const item = map.get(created_pod_key)
+            if (!item) {
+                console.log(created_pod_key, map, item);
+                return log.Error("找不到更新的容器，请确认")
+            }
+            if (item.STATUS !== "Running" && item.STATUS !== "ContainerCreating") {
+                console.log(created_pod_key, map, item);
+                return log.Error("更新异常")
+            }
+            if (item.READY.now === item.READY.want) {
+                return log.Success(`更新完成, 更新时间：${item.AGE}`)
+            }
         }
-        if (item.STATUS !== "Running" && item.STATUS !== "ContainerCreating") {
-            console.log(chalk.red("更新异常"));
-            console.log(created_pod_key, map, item);
-            return
-        }
-        if (item.READY.now === item.READY.want) {
-            console.log(chalk.green(`更新完成, 更新时间：${item.AGE}`));
-            return
-        }
-    }
+    }, '更新泳道')
 }
 
 async function getPodsMap(nameSpace: string) {
@@ -104,7 +104,8 @@ function unmarshal_pod(str: string) {
 }
 
 async function getYml(nameSpace: string, img: string, path: string) {
-    const str = await $`namespace=${nameSpace};img=${img}; eval "cat <<EOF\n$(< ${path})\nEOF"`
+    const res= readFileSync(path,'utf-8')
+    const str = await $`namespace=${nameSpace};img=${img}; eval "echo ${res}"`
     return str.stdout.replaceAll('"', "'")
 }
 
