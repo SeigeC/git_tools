@@ -1,6 +1,8 @@
 import prompts from 'prompts';
 import login, { session, rider_url, codesync_url, git_url } from '../common/login.js'
 import { GetMyPr } from '../common/pr.js'
+import log from '../common/log.js';
+import { waitingFunc } from '../common/waiting.js'
 import cookie from '../common/cookie.js'
 import fetch from 'node-fetch';
 
@@ -50,16 +52,16 @@ export default async function () {
         "branch": `pr/${pr}`,
         "enforce": true
     }
-    let loading = waiting()
-    const ops_res = await (await fetch(`https://${codesync_url}`, { method: 'post', body: JSON.stringify(ops) })).json()
-    if (ops_res?.code !== 0) {
-        console.log(chalk.red("构建失败"), ops_res);
-        return
-    }
+    const rider_pr = await waitingFunc(async function () {
+        const ops_res = await (await fetch(`https://${codesync_url}`, { method: 'post', body: JSON.stringify(ops) })).json()
+        if (ops_res?.code !== 0) {
+            log.Error("构建失败")
+            return
+        }
+        const commitList = (await (await fetch(`http://${rider_url}/api/git/get_branch/${project.git_id}`, { ...header, method: 'post' })).json()).data
+        return commitList.find(item => item.name === `pr/${pr}`)
+    }, '同步代码')
 
-    const commitList = (await (await fetch(`http://${rider_url}/api/git/get_branch/${project.git_id}`, { ...header, method: 'post' })).json()).data
-    const rider_pr = commitList.find(item => item.name === `pr/${pr}`)
-    clearInterval(loading)
 
     const body = {
         "version": "1.15",
@@ -78,32 +80,25 @@ export default async function () {
         body: JSON.stringify(body),
     })).json())
     if (!build_res.result) {
-        console.log(chalk.blue("构建失败"));
+        log.Error("构建失败");
         return
     }
     const build_id = build_res.build_id
-    console.log(`\r${chalk.blue("name:")} ${chalk.cyan(rider_pr.name)}`);
-    console.log(`${chalk.blue("message:")} ${chalk.cyan(rider_pr.commit.message)}`);
-    console.log(`${chalk.blue("commit_id:")} ${chalk.cyan(rider_pr.commit.id)}`);
-    console.log(`${chalk.blue("build_id:")} ${chalk.cyan(build_id)}`);
-    loading = waiting()
-    let img_url = ""
-    do {
-        await sleep(2000)
-        const build_list = (await (await fetch(`http://${rider_url}/api/pkg/search_buildtask?page=1&per_page=10`, header)).json()).data
-        img_url = build_list.find(item => item.id === build_id)?.package_info?.docker_image_name
-    } while (img_url === "");
-    clearInterval(loading)
-    console.log(`\r${chalk.blue("build_id:")} ${chalk.cyan(img_url)}`);
+    log.info("name", rider_pr.name)
+    log.info("message", rider_pr.message)
+    log.info("commit_id", rider_pr.id)
+    log.info("build_id", build_id)
+    const img_url = await waitingFunc(async function () {
+        for (; ;) {
+            await sleep(2000)
+            const build_list = (await (await fetch(`http://${rider_url}/api/pkg/search_buildtask?page=1&per_page=10`, header)).json()).data
+            const img_url = build_list.find(item => item.id === build_id)?.package_info?.docker_image_name
+            if (img_url) {
+                return img_url
+            }
+        }
+    }, "rider 构建")
+    log.info("img", img_url)
     return img_url
 }
 
-function waiting() {
-    const chart = '|/-\\'
-    let index = 0
-    // 一帧能玩，两帧流畅，三帧电竞
-    return setInterval(() => {
-        index = ++index % chart.length
-        process.stdout.write(`\r${chart[index]}`)
-    }, 300)
-}
