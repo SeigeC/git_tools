@@ -9,3 +9,5 @@ func/swimlane/swimlane.json
 func/index.js
 /.graphqlconfig
 /func/a_test.ts
+schema.docs.graphql
+schema.graphql
