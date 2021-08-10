@@ -26,8 +26,8 @@ export default async function Week() {
     console.log(res)
 }
 
-function hasLabel(pr, labe) {
-    return pr.labels.find((label) => label.name === labe) !== undefined
+function hasLabel(pr, label) {
+    return pr.labels.find(item => item.name === label) !== undefined
 }
 
 function getTitle(pr) {
