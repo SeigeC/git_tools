@@ -1,5 +1,6 @@
-import json from '../github_user.json'
-const { projectList } = json
+import store from "../common/store.js";
+
+const {projectList} = store.github_user
 export const description = '生成周报'
 export default async function Week() {
     let list = await Promise.all(Object.keys(projectList).map(async (project) => {

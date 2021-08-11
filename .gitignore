@@ -1,13 +1,10 @@
-github_user.json
 .DS_Store
 .idea
 node_modules
-oa.json
-func/swimlane/*.yml
-func/aoko.mjs
-func/swimlane/swimlane.json
-func/index.js
+config/swimlane/*.yml
+config/*.json
 /.graphqlconfig
-/func/a_test.ts
 schema.docs.graphql
 schema.graphql
+index.js
+index.js.map
