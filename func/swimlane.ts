@@ -1,13 +1,11 @@
-import { readdirSync,readFileSync } from 'fs';
-import { waitingFunc } from '../common/waiting.js'
+import {readFileSync} from 'fs';
+import {waitingFunc} from '../common/waiting.js'
 import log from '../common/log.js';
 import prompts from 'prompts';
-import json from './swimlane/swimlane.json'
-const { name, ip } = json
-import path from 'path';
-const __dirname = path.resolve();
+import store, {__swimlane_path} from "../common/store.js";
 
-const filepath = `${__dirname}/func/swimlane`
+const {name, ip} = store.ssh
+
 export const description = '上泳道'
 
 interface params {
@@ -16,13 +14,12 @@ interface params {
     project?: string
 }
 
-export default async function ssh({ img, name_space, project }: params = {}) {
-    const list = readdirSync(filepath).filter(file => file.endsWith(".yml"))
+export default async function ssh({img, name_space, project}: params = {}) {
     project = project ?? (await prompts({
         type: 'select',
         name: 'value',
         message: '请选择要构建的项目',
-        choices: list.map(item => ({
+        choices: store.swimlane.map(item => ({
             title: item, value: item
         })),
         initial: 0
@@ -41,7 +38,7 @@ export default async function ssh({ img, name_space, project }: params = {}) {
     })).value
 
     const pods = await getPodsMap(name_space)
-    const path = `${filepath}/${project}`
+    const path = `${__swimlane_path}/${project}`
 
     const str = await getYml(name_space, img, path)
     await updatedK8s(str, project)
@@ -93,7 +90,7 @@ function unmarshal_pod(str: string) {
             const key = keys[i]
             if (key === "READY") {
                 const [now, want] = res[i].split('/')
-                obj[key] = { now: parseInt(now), want: parseInt(want) }
+                obj[key] = {now: parseInt(now), want: parseInt(want)}
             } else {
                 obj[key] = res[i]
             }
@@ -104,7 +101,7 @@ function unmarshal_pod(str: string) {
 }
 
 async function getYml(nameSpace: string, img: string, path: string) {
-    const res= readFileSync(path,'utf-8')
+    const res = readFileSync(path, 'utf-8')
     const str = await $`namespace=${nameSpace};img=${img}; eval "echo ${res}"`
     return str.stdout.replaceAll('"', "'")
 }

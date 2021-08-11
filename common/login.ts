@@ -1,9 +1,10 @@
 import OTPAuth from 'otpauth';
 import FormData from 'form-data';
 import fetch from 'node-fetch';
-import json from '../oa.json'
-const { username, password, otpauth, session, login_url, rider_url, codesync_url, git_url } = json
-export { username, password, otpauth, session, login_url, rider_url, codesync_url, git_url }
+import store from './store'
+
+const {username, password, otpauth, session, login_url, rider_url, codesync_url, git_url} = store.oa
+export {username, password, otpauth, session, login_url, rider_url, codesync_url, git_url}
 export default async function () {
     // Create a new TOTP object.
     let totp = OTPAuth.URI.parse(otpauth);
@@ -35,8 +36,5 @@ export default async function () {
 
     const res = await fetch(`https://${login_url}/web/login.do`, requestOptions)
     const json = await res.json()
-    if (json?.code === 0) {
-        return true
-    }
-    return false
+    return json?.code === 0;
 }

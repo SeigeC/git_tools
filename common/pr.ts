@@ -108,7 +108,6 @@ export async function GetApprovedUser({project_name, number}: { project_name: st
     const last_commit_time = new Date(commits.edges[0].node.commit.committedDate).getTime()
     const after_last_commit_reviews = reviews.edges.filter(item => {
         const approved_time = new Date(item.node.submittedAt).getTime()
-        console.log(approved_time, last_commit_time, approved_time > last_commit_time)
         return approved_time > last_commit_time
     })
     const approved = after_last_commit_reviews.map(item => item.node.author.login)

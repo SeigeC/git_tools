@@ -1,8 +1,8 @@
-import json from '../github_user.json'
 import {GetApprovedUser, GetMyPr} from '../common/pr.js'
 import prompts from 'prompts';
+import store from "../common/store.js";
 
-const {userList, projectList} = json
+const {userList, projectList} = store.github_user
 
 export const description = '催 Pr'
 export default async function Pr() {
@@ -41,7 +41,7 @@ export default async function Pr() {
         if (!review_user?.phone) {
             return false
         }
-        const rule = review_user.reivew_rule as { and: string[], or: string[] }
+        const rule = review_user.review_rule
         if (!rule) {
             return true
         }
@@ -67,7 +67,7 @@ export default async function Pr() {
         })
         return
     }
-    
+
     if (!projectList[project]?.review_userList) {
         return
     }
