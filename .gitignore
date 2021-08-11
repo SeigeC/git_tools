@@ -6,5 +6,4 @@ config/*.json
 /.graphqlconfig
 schema.docs.graphql
 schema.graphql
-index.js
 index.js.map
