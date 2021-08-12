@@ -1,23 +1,27 @@
 import {GetApprovedUser, GetMyPr} from '../common/pr.js'
-import prompts from 'prompts';
+import prompts from '../common/prompts';
 import store from "../common/store.js";
 
 const {userList, projectList} = store.github_user
 
 export const description = '催 Pr'
 export default async function Pr() {
-    const project = (await prompts({
-        type: 'select',
+    const projects = (await prompts({
+        type: 'multiselect',
         name: 'value',
         message: '请选择要拉取的项目',
         choices: Object.keys(projectList).map(item => ({title: item, value: item})),
+        min: 1,
         initial: 0
-    })).value
-
-    let res = await GetMyPr(project)
+    })).value as string[]
+    const list = await Promise.all(projects.map(async project => {
+        const list = (await GetMyPr(project)) as any[]
+        return list.map(item => ({...item, project}))
+    }))
+    let res = list.flat()
     // 筛选 label
     res = res.filter(item => !hasLabel(item, "pending"))
-    if (res === "") {
+    if (res.length === 0) {
         console.error("res 不能为空")
         await $`exit`
     }
@@ -52,7 +56,7 @@ export default async function Pr() {
         return !!rule.or.find(name => approved_users.includes(name))
     }
 
-    async function setPusMap(item) {
+    async function setPusMap(project: string, item) {
         const approved_users = await GetApprovedUser({
             project_name: project, number: parseInt(item.number)
         })
@@ -68,21 +72,19 @@ export default async function Pr() {
         return
     }
 
-    if (!projectList[project]?.review_userList) {
-        return
-    }
+
+    const set = new Set(projects.map(project => projectList[project].review_userList).flat())
 
     const wantReviewUser = (await prompts({
         type: 'multiselect',
         name: 'value',
         message: '请选择要 review 的人',
-        choices: projectList[project].review_userList.map(item => ({title: item, value: item})),
+        choices: [...set].map(item => ({title: item, value: item})),
         min: 1,
         initial: 0
     })).value as string[]
-
     const pushMap = new Map()
-    await Promise.all(res.map((item: any) => setPusMap(item)))
+    await Promise.all(res.map((item) => setPusMap(item.project, item)))
     if (pushMap.size === 0) {
         return
     }

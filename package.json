@@ -1,6 +1,6 @@
 {
   "name": "@seigec/git_tools",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "## How to use",
   "main": "index.ts",
   "bin": {
@@ -38,6 +38,7 @@
     "@octokit/graphql-schema": "^10.59.0",
     "@types/prompts": "^2.0.14",
     "esbuild": "^0.12.19",
-    "esbuild-plugin-import-glob": "^0.1.1"
+    "esbuild-plugin-import-glob": "^0.1.1",
+    "ts-node": "^10.2.0"
   }
 }

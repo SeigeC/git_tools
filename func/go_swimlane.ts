@@ -1,6 +1,6 @@
 import build from './build.js'
 import swimlane from './swimlane.js'
-import prompts from 'prompts'
+import prompts from '../common/prompts.js'
 import store from "../common/store.js";
 
 const {name} = store.ssh

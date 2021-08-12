@@ -1,7 +1,7 @@
 import {readFileSync} from 'fs';
 import {waitingFunc} from '../common/waiting.js'
 import log from '../common/log.js';
-import prompts from 'prompts';
+import prompts from '../common/prompts';
 import store, {__swimlane_path} from "../common/store.js";
 
 const {name, ip} = store.ssh

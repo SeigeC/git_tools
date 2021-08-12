@@ -1,8 +1,8 @@
-import prompts from 'prompts';
-import login, { session, rider_url, codesync_url, git_url } from '../common/login.js'
-import { GetMyPr } from '../common/pr.js'
+import prompts from '../common/prompts';
+import login, {codesync_url, git_url, rider_url, session} from '../common/login.js'
+import {GetMyPr} from '../common/pr.js'
 import log from '../common/log.js';
-import { waitingFunc } from '../common/waiting.js'
+import {waitingFunc} from '../common/waiting.js'
 import cookie from '../common/cookie.js'
 import fetch from 'node-fetch';
 
@@ -10,19 +10,19 @@ export const description = '自动构建'
 export default async function () {
     const res = await login()
 
-    const getSession = await fetch(`http://${rider_url}/index`, { headers: { "Cookie": `session=${session}` } })
+    const getSession = await fetch(`http://${rider_url}/index`, {headers: {"Cookie": `session=${session}`}})
     const build_session = getSession.headers.raw()['set-cookie']?.[0];
     const r = cookie(build_session)?.["session"]
     const header = {
         headers:
-        {
-            'Content-Type': 'application/json',
-            "Host": rider_url,
-            "Origin": `http://${rider_url}`,
-            "Upgrade-Insecure-Requests": "1",
-            "Cookie": `session=${r ? r : session}`,
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.70"
-        }
+            {
+                'Content-Type': 'application/json',
+                "Host": rider_url,
+                "Origin": `http://${rider_url}`,
+                "Upgrade-Insecure-Requests": "1",
+                "Cookie": `session=${r ? r : session}`,
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.70"
+            }
     }
     const appList = (await (await fetch(`http://${rider_url}/api/app/search_app?page=1&per_page=10`, header)).json()).data
     const project = (await prompts({
@@ -41,7 +41,7 @@ export default async function () {
         type: 'select',
         name: 'value',
         message: `想要构建的 pr`,
-        choices: pr_list.map(item => ({ title: item.title, value: item.number })),
+        choices: pr_list.map(item => ({title: item.title, value: item.number})),
     }, {
         onSubmit: (prompt, answer) => answer ? null : console.log(chalk.red("找不到指定的 pr"))
     })).value
@@ -53,12 +53,18 @@ export default async function () {
         "enforce": true
     }
     const rider_pr = await waitingFunc(async function () {
-        const ops_res = await (await fetch(`https://${codesync_url}`, { method: 'post', body: JSON.stringify(ops) })).json()
+        const ops_res = await (await fetch(`https://${codesync_url}`, {
+            method: 'post',
+            body: JSON.stringify(ops)
+        })).json()
         if (ops_res?.code !== 0) {
             log.Error("构建失败")
             return
         }
-        const commitList = (await (await fetch(`http://${rider_url}/api/git/get_branch/${project.git_id}`, { ...header, method: 'post' })).json()).data
+        const commitList = (await (await fetch(`http://${rider_url}/api/git/get_branch/${project.git_id}`, {
+            ...header,
+            method: 'post'
+        })).json()).data
         return commitList.find(item => item.name === `pr/${pr}`)
     }, '同步代码')
 
