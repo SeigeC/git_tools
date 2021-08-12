@@ -5,8 +5,13 @@ import gql from "graphql-tag";
 import {DocumentNode, print} from 'graphql'
 
 export async function GetMyPr(project) {
-    const data = await fetch(`https://api.github.com/repos/MiaoSiLa/${project}/pulls?access_token=${process.env.GITHUB_TOKEN}`)
+    const data = await fetch(`https://api.github.com/repos/MiaoSiLa/${project}/pulls?access_token=${process.env.GITHUB_TOKEN}`, {
+        headers: {
+            "Authorization": `token ${process.env.GITHUB_TOKEN}`
+        }
+    })
     let res = await data.json()
+    // console.log(res)
     // 筛选 user
     return res.filter(item => item.user.login === process.env.GITHUB_USERNAME)
 }
