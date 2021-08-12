@@ -1,6 +1,6 @@
 {
   "name": "@seigec/git_tools",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "## How to use",
   "main": "index.ts",
   "bin": {
