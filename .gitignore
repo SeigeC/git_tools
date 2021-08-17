@@ -7,3 +7,4 @@ config/*.json
 schema.docs.graphql
 schema.graphql
 index.js.map
+index.js
