@@ -1,14 +1,14 @@
 import store from "../common/store.js";
 
-const {projectList} = store.github_user
+const {projectList, config: {token, username}} = store.github_user
 export const description = '生成周报'
 export default async function Week() {
     let list = await Promise.all(Object.keys(projectList).map(async (project) => {
-        const data = await fetch(`https://api.github.com/repos/MiaoSiLa/${project}/pulls?access_token=${process.env.GITHUB_TOKEN}&sort=updated&per_page=100&state=all&direction=desc`)
+        const data = await fetch(`https://api.github.com/repos/MiaoSiLa/${project}/pulls?access_token=${token}&sort=updated&per_page=100&state=all&direction=desc`)
         let res = await data.json()
 
         // 筛选 user
-        res = res.filter(item => item.user.login === process.env.GITHUB_USERNAME)
+        res = res.filter(item => item.user.login === username)
 
         res = res.filter(item => new Date(item.updated_at).getTime() > new Date().getTime() - 14 * 24 * 60 * 60 * 1000)
         return res

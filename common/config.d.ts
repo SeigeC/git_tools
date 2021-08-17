@@ -3,6 +3,7 @@ export interface config {
     oa?: oa
     ssh?: ssh
     swimlane?: string[]
+    stable?: stable
 
     [name: string]: unknown
 }
@@ -10,6 +11,7 @@ export interface config {
 export interface github_user {
     userList: UserList
     projectList: ProjectList
+    config?: Config
 }
 
 export interface UserList {
@@ -35,6 +37,12 @@ export interface Project {
     review_userList: string[]
 }
 
+export interface Config {
+    username: string
+    token: string
+    bot_token: string
+}
+
 export interface oa {
     username: string
     password: string
@@ -49,4 +57,8 @@ export interface oa {
 export interface ssh {
     name: string
     ip: string
+}
+
+export interface stable {
+    [name: string]: string
 }

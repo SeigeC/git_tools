@@ -33,5 +33,10 @@
                 "user3"
             ]
         }
+    },
+    "config": {
+        "username": "",
+        "token": "",
+        "bot_token": ""
     }
 }
