@@ -1,7 +1,6 @@
 #!/usr/bin/env zx
 /// <reference types="zx"/>
 import prompts from './common/prompts';
-import {$} from 'zx'
 // @ts-ignore
 import func from './func/*'
 

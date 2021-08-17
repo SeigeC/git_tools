@@ -20,6 +20,13 @@ export async function init() {
             return config[path.basename(file_path, path.extname(file_path))] = JSON.parse(str)
         })
     )
+    // 兼容 env 情况
+    const github_config = config.github_user.config
+    config.github_user.config = {
+        username: github_config.username ? github_config.username : process.env.GITHUB_USERNAME,
+        token: github_config.token ? github_config.token : process.env.GITHUB_TOKEN,
+        bot_token: github_config.bot_token
+    }
     return config
 }
 

@@ -4,11 +4,11 @@ class Log {
     }
 
     Success(msg: string) {
-        console.log(`\r${chalk.green(msg)}`);
+        console.log(`\r${chalk.green('✔')} ${msg}`);
     }
 
     Error(msg: string) {
-        console.log(`\r${chalk.red(msg)}`);
+        console.log(`\r${chalk.red('✖')} ${msg}`);
         process.exit()
     }
 
