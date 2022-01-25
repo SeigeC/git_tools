@@ -36,5 +36,5 @@ export default async function () {
 
     const res = await fetch(`https://${login_url}/web/login.do`, requestOptions)
     const json = await res.json()
-    return json?.code === 0;
+    return json?.code === 0? json: false
 }
